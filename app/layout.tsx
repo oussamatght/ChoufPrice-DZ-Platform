@@ -14,7 +14,11 @@ export const metadata: Metadata = {
   keywords: ["Algeria", "prices", "monitoring", "DZD", "shopping", "community"],
   icons: {
     icon: [
-     
+      { url: '/icon.svg', type: 'image/svg+xml' },
+      { url: '/favicon.ico', sizes: 'any' }
+    ],
+    apple: [
+      { url: '/apple-icon.svg', type: 'image/svg+xml' }
     ],
   },
 }
