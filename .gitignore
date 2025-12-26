@@ -3,11 +3,14 @@
 # dependencies
 /node_modules
 /micro
+/backend
 # next.js
 /.next/
 /out/
 
 # production
+.env.production
+.env.development
 /build
 
 # debug

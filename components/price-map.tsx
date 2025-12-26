@@ -61,7 +61,9 @@ export function PriceMap({ reports, selectedCategory, onSelectReport }: PriceMap
       leafletRef.current = L
 
       if (!mapContainer.current) {
-        throw new Error("Map container not found")
+        console.error("[v0] Map container not found")
+        setStatus("error")
+        return
       }
 
       // Fix default marker icons

@@ -1,8 +1,10 @@
 "use client"
 
 import type React from "react"
-import { createContext, useContext, useState, useEffect, useCallback } from "react"
+import { createContext, useContext, useState, useEffect, useCallback, useMemo } from "react"
 import type { User } from "@/types"
+
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000"
 
 interface AuthContextType {
   user: User | null
@@ -18,34 +20,78 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
+  const [token, setToken] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
+  // Restore session from storage then validate with backend
   useEffect(() => {
-    // Check for existing session
     const storedUser = localStorage.getItem("choufprice_user")
-    if (storedUser) {
+    const storedToken = localStorage.getItem("choufprice_token")
+
+    if (storedUser && storedToken) {
       setUser(JSON.parse(storedUser))
+      setToken(storedToken)
     }
-    setIsLoading(false)
+
+    const fetchMe = async () => {
+      if (!storedToken) {
+        setIsLoading(false)
+        return
+      }
+      try {
+        const res = await fetch(`${API_BASE}/api/auth/me`, {
+          headers: { Authorization: `Bearer ${storedToken}` },
+        })
+        if (!res.ok) {
+          throw new Error("unauthorized")
+        }
+        const data = await res.json()
+        const me: User = {
+          id: data.id,
+          email: data.email,
+          name: data.name,
+          isAnonymous: false,
+          createdAt: new Date(data.createdAt),
+        }
+        setUser(me)
+        localStorage.setItem("choufprice_user", JSON.stringify(me))
+      } catch (err) {
+        // If token invalid, clear
+        setUser(null)
+        setToken(null)
+        localStorage.removeItem("choufprice_user")
+        localStorage.removeItem("choufprice_token")
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchMe()
   }, [])
 
   const login = useCallback(async (email: string, password: string) => {
     setIsLoading(true)
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      const res = await fetch(`${API_BASE}/api/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      })
+      if (!res.ok) throw new Error("Login failed")
 
+      const data = await res.json()
       const newUser: User = {
-        id: `user-${Date.now()}`,
-        email,
-        name: email.split("@")[0],
+        id: data.user.id,
+        email: data.user.email,
+        name: data.user.name,
         isAnonymous: false,
         createdAt: new Date(),
       }
 
       setUser(newUser)
+      setToken(data.token)
       localStorage.setItem("choufprice_user", JSON.stringify(newUser))
-      localStorage.setItem("choufprice_token", `jwt-token-${Date.now()}`)
+      localStorage.setItem("choufprice_token", data.token)
     } finally {
       setIsLoading(false)
     }
@@ -54,30 +100,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const register = useCallback(async (email: string, password: string, name: string) => {
     setIsLoading(true)
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      const res = await fetch(`${API_BASE}/api/auth/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, name }),
+      })
+      if (!res.ok) throw new Error("Register failed")
 
-      const newUser: User = {
-        id: `user-${Date.now()}`,
-        email,
-        name,
-        isAnonymous: false,
-        createdAt: new Date(),
-      }
-
-      setUser(newUser)
-      localStorage.setItem("choufprice_user", JSON.stringify(newUser))
-      localStorage.setItem("choufprice_token", `jwt-token-${Date.now()}`)
+      // Auto login after register
+      await login(email, password)
     } finally {
       setIsLoading(false)
     }
-  }, [])
+  }, [login])
 
   const loginAnonymous = useCallback(async (name?: string) => {
+    // Keep anonymous client-only
     setIsLoading(true)
     try {
-      await new Promise((resolve) => setTimeout(resolve, 500))
-
       const newUser: User = {
         id: `anon-${Date.now()}`,
         email: "",
@@ -87,7 +127,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       setUser(newUser)
+      setToken(null)
       localStorage.setItem("choufprice_user", JSON.stringify(newUser))
+      localStorage.removeItem("choufprice_token")
     } finally {
       setIsLoading(false)
     }
@@ -95,22 +137,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = useCallback(() => {
     setUser(null)
+    setToken(null)
     localStorage.removeItem("choufprice_user")
     localStorage.removeItem("choufprice_token")
   }, [])
 
+  const value = useMemo(
+    () => ({
+      user,
+      isLoading,
+      login,
+      register,
+      loginAnonymous,
+      logout,
+      isAuthenticated: !!user,
+    }),
+    [user, isLoading, login, register, loginAnonymous, logout],
+  )
+
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isLoading,
-        login,
-        register,
-        loginAnonymous,
-        logout,
-        isAuthenticated: !!user,
-      }}
-    >
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   )
