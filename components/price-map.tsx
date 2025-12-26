@@ -86,11 +86,16 @@ export function PriceMap({ reports, selectedCategory, onSelectReport }: PriceMap
         maxZoom: 18,
       }).addTo(map)
 
-      // Create marker cluster group
+      // Create marker cluster group with optimized settings for massive datasets
       const markerClusterGroup = L.markerClusterGroup({
-        maxClusterRadius: 80,
-        spiderfyOnMaxZoom: true,
-        disableClusteringAtZoom: 14,
+        maxClusterRadius: 120,
+        spiderfyOnMaxZoom: false,
+        disableClusteringAtZoom: 16,
+        chunkedLoading: true,
+        chunkInterval: 200,
+        chunkDelay: 50,
+        removeOutsideVisibleBounds: true,
+        animate: false,
       })
 
       clusterGroupRef.current = markerClusterGroup
@@ -144,49 +149,54 @@ export function PriceMap({ reports, selectedCategory, onSelectReport }: PriceMap
 
       const filteredReports = selectedCategory ? reports.filter((r) => r.category === selectedCategory) : reports
 
-      // Process all reports (clustering will handle performance)
-      filteredReports.forEach((report) => {
-        const color = categoryColors[report.category as keyof typeof categoryColors] || "#22c55e"
-        const isAbnormal = report.isAbnormal
+      // Process markers in batches for better performance with massive datasets
+      const batchSize = 10000
+      let processed = 0
 
-        const icon = L.divIcon({
-          html: `<div style="
-            background: ${isAbnormal ? "#dc2626" : color};
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            border: 2px solid white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 10px;
-            color: white;
-            font-weight: bold;
-          ">${isAbnormal ? "!" : ""}</div>`,
-          className: "custom-marker",
-          iconSize: [18, 18],
-          iconAnchor: [9, 9],
+      const processBatch = () => {
+        const batch = filteredReports.slice(processed, processed + batchSize)
+        
+        batch.forEach((report) => {
+          const color = categoryColors[report.category as keyof typeof categoryColors] || "#22c55e"
+          const isAbnormal = report.isAbnormal
+
+          // Simplified icon for performance
+          const icon = L.divIcon({
+            html: `<div style="background:${isAbnormal ? "#dc2626" : color};width:16px;height:16px;border-radius:50%;border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,0.3)">${isAbnormal ? "!" : ""}</div>`,
+            className: "custom-marker",
+            iconSize: [16, 16],
+            iconAnchor: [8, 8],
+          })
+
+          const marker = L.marker([report.latitude, report.longitude], { icon })
+
+          marker.bindPopup(`
+            <div style="min-width: 160px;">
+              <strong style="font-size: 13px; display: block; margin-bottom: 4px;">${report.productName}</strong>
+              <span style="font-size: 15px; font-weight: 700; color: ${isAbnormal ? "#dc2626" : color};">
+                ${report.price.toLocaleString("fr-DZ")} DZD
+              </span>
+              <div style="font-size: 11px; color: #666; margin-top: 4px;">${report.city}</div>
+              <div style="font-size: 10px; color: #999;">
+                ${formatDistanceToNow(new Date(report.timestamp), { addSuffix: true, locale: fr })}
+              </div>
+            </div>
+          `)
+
+          marker.on("click", () => onSelectReport(report))
+          clusterGroupRef.current.addLayer(marker)
         })
 
-        const marker = L.marker([report.latitude, report.longitude], { icon })
+        processed += batchSize
 
-        marker.bindPopup(`
-          <div style="min-width: 160px;">
-            <strong style="font-size: 13px; display: block; margin-bottom: 4px;">${report.productName}</strong>
-            <span style="font-size: 15px; font-weight: 700; color: ${isAbnormal ? "#dc2626" : color};">
-              ${report.price.toLocaleString("fr-DZ")} DZD
-            </span>
-            <div style="font-size: 11px; color: #666; margin-top: 4px;">${report.city}</div>
-            <div style="font-size: 10px; color: #999;">
-              ${formatDistanceToNow(new Date(report.timestamp), { addSuffix: true, locale: fr })}
-            </div>
-          </div>
-        `)
+        // Continue processing if there are more markers
+        if (processed < filteredReports.length) {
+          setTimeout(processBatch, 0)
+        }
+      }
 
-        marker.on("click", () => onSelectReport(report))
-        clusterGroupRef.current.addLayer(marker)
-      })
+      // Start batch processing
+      processBatch()
     } catch (err) {
       console.error("[v0] Error updating markers:", err)
     }

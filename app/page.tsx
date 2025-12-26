@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback, useEffect } from "react"
+import { useState, useCallback, useEffect, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import dynamic from "next/dynamic"
 import { useAuth } from "@/context/auth-context"
@@ -115,15 +115,22 @@ export default function DashboardPage() {
 
   const handleDismissAlert = useCallback(() => {}, [])
 
-  const categoryCounts = reports.reduce(
-    (acc, report) => {
-      acc[report.category] = (acc[report.category] || 0) + 1
-      return acc
-    },
-    {} as Record<string, number>,
-  )
+  // Memoize filtered reports for performance
+  const filteredReports = useMemo(() => {
+    return selectedCategory ? reports.filter((r) => r.category === selectedCategory) : reports
+  }, [reports, selectedCategory])
 
-  const alerts = reports.filter((r) => r.isAbnormal).slice(0, 10)
+  const categoryCounts = useMemo(() => {
+    return reports.reduce(
+      (acc, report) => {
+        acc[report.category] = (acc[report.category] || 0) + 1
+        return acc
+      },
+      {} as Record<string, number>,
+    )
+  }, [reports])
+
+  const alerts = useMemo(() => reports.filter((r) => r.isAbnormal).slice(0, 10), [reports])
 
   if (authLoading || !isClient) {
     return (
@@ -178,13 +185,13 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 md:gap-6">
             {/* Map - Full width on mobile, 3 cols on desktop */}
             <div className="lg:col-span-3 order-1">
-              <PriceMap reports={reports} selectedCategory={selectedCategory} onSelectReport={handleSelectReport} />
+              <PriceMap reports={filteredReports} selectedCategory={selectedCategory} onSelectReport={handleSelectReport} />
             </div>
 
             {/* Price List - Full width on mobile, 2 cols on desktop */}
             <div className="lg:col-span-2 order-2">
               <PriceList
-                reports={selectedCategory ? reports.filter((r) => r.category === selectedCategory) : reports}
+                reports={filteredReports}
                 onVote={handleVote}
                 selectedReport={selectedReport}
               />

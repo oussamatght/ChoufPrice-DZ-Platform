@@ -418,15 +418,15 @@ const productTemplates: Omit<Product, "id">[] = [
   { name: "Café Express", category: "services", averagePrice: 50, unit: "tasse" },
 ]
 
-// Generate 100000+ price reports across Algeria
+// Generate ~55K price reports across Algeria
 function generatePriceReports(): PriceReport[] {
   const reports: PriceReport[] = []
   let id = 1
 
-  // For each city, generate multiple price reports
+  // For each city, generate reports (~54,900 total)
   algeriaCities.forEach((city) => {
-    // Generate 1000-1200 reports per city (20-25 * 50)
-    const reportsPerCity = (20 + Math.floor(Math.random() * 6)) * 50
+    // Generate 945-950 reports per city
+    const reportsPerCity = 945 + Math.floor(Math.random() * 6)
 
     for (let i = 0; i < reportsPerCity; i++) {
       const product = productTemplates[Math.floor(Math.random() * productTemplates.length)]
