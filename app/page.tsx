@@ -2,10 +2,10 @@
 
 import { useState, useCallback, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import dynamic from "next/dynamic"
 import { useAuth } from "@/context/auth-context"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
-import { PriceMap } from "@/components/price-map"
 import { PriceList } from "@/components/price-list"
 import { AddPriceForm } from "@/components/add-price-form"
 import { CategoryFilter } from "@/components/category-filter"
@@ -15,6 +15,16 @@ import { StatsOverview } from "@/components/stats-overview"
 import { priceReports as initialReports } from "@/data/products"
 import type { PriceReport, ChatMessage } from "@/types"
 import { Skeleton } from "@/components/ui/skeleton"
+
+// Dynamic import for PriceMap to avoid SSR issues with Leaflet
+const PriceMap = dynamic(() => import("@/components/price-map").then((mod) => ({ default: mod.PriceMap })), {
+  ssr: false,
+  loading: () => (
+    <div className="relative w-full h-[300px] sm:h-[350px] md:h-[400px] lg:h-[450px]">
+      <Skeleton className="w-full h-full" />
+    </div>
+  ),
+})
 
 const initialMessages: ChatMessage[] = [
   {
