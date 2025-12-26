@@ -69,7 +69,7 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <h2 className="text-4xl font-bold mb-6 leading-tight text-balance">
+          <h2 className="text-4xl font-bold mb-6 leading-tight text-balance" translate="no" suppressHydrationWarning>
             Suivez les prix en temps réel à travers l'Algérie
           </h2>
 

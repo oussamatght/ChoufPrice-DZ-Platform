@@ -55,8 +55,9 @@ export function PriceMap({ reports, selectedCategory, onSelectReport }: PriceMap
 
       await new Promise((r) => setTimeout(r, 200))
 
-      // Dynamic import of Leaflet and MarkerCluster
-      const L = (await import("leaflet")).default
+      // Dynamic import of Leaflet and MarkerCluster (handle default/named export)
+      const leafletModule: any = await import("leaflet")
+      const L = leafletModule.default ?? leafletModule
       await import("leaflet.markercluster")
       leafletRef.current = L
 
@@ -64,6 +65,16 @@ export function PriceMap({ reports, selectedCategory, onSelectReport }: PriceMap
         console.error("[v0] Map container not found")
         setStatus("error")
         return
+      }
+
+      // Clear any stale Leaflet instance on this container (can happen after fast refresh)
+      if ((mapContainer.current as any)._leaflet_id) {
+        try {
+          (mapContainer.current as any)._leaflet_id = null
+          mapContainer.current.innerHTML = ""
+        } catch (clearErr) {
+          console.warn("[v0] Could not clear stale Leaflet container", clearErr)
+        }
       }
 
       // Fix default marker icons
@@ -154,19 +165,36 @@ export function PriceMap({ reports, selectedCategory, onSelectReport }: PriceMap
     initializeMap()
 
     return () => {
+      if (!mapRef.current) return
       try {
-        if (mapRef.current) {
-          if (clusterGroupRef.current) {
+        if (clusterGroupRef.current && mapRef.current.hasLayer(clusterGroupRef.current)) {
+          try {
             clusterGroupRef.current.clearLayers()
             mapRef.current.removeLayer(clusterGroupRef.current)
+          } catch (layerErr) {
+            console.error("[v0] Cleanup cluster error:", layerErr)
           }
+        }
+        try {
+          mapRef.current.off()
           mapRef.current.remove()
-          mapRef.current = null
-          clusterGroupRef.current = null
-          leafletRef.current = null
+        } catch (mapErr) {
+          console.error("[v0] Cleanup map error:", mapErr)
         }
       } catch (err) {
         console.error("[v0] Cleanup error:", err)
+      } finally {
+        if (mapContainer.current) {
+          try {
+            (mapContainer.current as any)._leaflet_id = null
+            mapContainer.current.innerHTML = ""
+          } catch (containerErr) {
+            console.warn("[v0] Could not reset map container", containerErr)
+          }
+        }
+        mapRef.current = null
+        clusterGroupRef.current = null
+        leafletRef.current = null
       }
     }
   }, [retryCount])
@@ -246,10 +274,20 @@ export function PriceMap({ reports, selectedCategory, onSelectReport }: PriceMap
         clusterGroupRef.current.clearLayers()
       }
       mapRef.current.remove()
-      mapRef.current = null
-      clusterGroupRef.current = null
-      leafletRef.current = null
     }
+
+    if (mapContainer.current) {
+      try {
+        (mapContainer.current as any)._leaflet_id = null
+        mapContainer.current.innerHTML = ""
+      } catch (containerErr) {
+        console.warn("[v0] Could not reset map container on retry", containerErr)
+      }
+    }
+
+    mapRef.current = null
+    clusterGroupRef.current = null
+    leafletRef.current = null
     setRetryCount((c) => c + 1)
   }
 
