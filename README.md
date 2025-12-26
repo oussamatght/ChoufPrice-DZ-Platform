@@ -230,7 +230,6 @@ This project is licensed under the MIT License.
 
 ## 🙏 Acknowledgments
 
-- [v0.dev](https://v0.dev/) - Initial project scaffolding
 - [OpenStreetMap](https://www.openstreetmap.org/) - Map tiles
 - [Vercel](https://vercel.com/) - Hosting and deployment
 - Algerian developer community
@@ -244,4 +243,5 @@ This project is licensed under the MIT License.
 Made with ❤️ for Algeria 🇩🇿
 
 </div>
+
 
