@@ -86,16 +86,48 @@ export function PriceMap({ reports, selectedCategory, onSelectReport }: PriceMap
         maxZoom: 18,
       }).addTo(map)
 
-      // Create marker cluster group with optimized settings for massive datasets
+      // Create marker cluster group with custom styling
       const markerClusterGroup = L.markerClusterGroup({
         maxClusterRadius: 120,
-        spiderfyOnMaxZoom: false,
+        spiderfyOnMaxZoom: true,
         disableClusteringAtZoom: 16,
         chunkedLoading: true,
         chunkInterval: 200,
         chunkDelay: 50,
         removeOutsideVisibleBounds: true,
-        animate: false,
+        animate: true,
+        iconCreateFunction: function(cluster: any) {
+          const count = cluster.getChildCount()
+          let size = 'small'
+          let radius = 40
+          
+          if (count > 100) {
+            size = 'large'
+            radius = 60
+          } else if (count > 50) {
+            size = 'medium'
+            radius = 50
+          }
+          
+          return L.divIcon({
+            html: `<div style="
+              background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+              width: ${radius}px;
+              height: ${radius}px;
+              border-radius: 50%;
+              border: 3px solid #fff;
+              box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-size: ${radius > 50 ? '18px' : '16px'};
+              font-weight: bold;
+              color: #000;
+            ">${count}</div>`,
+            className: 'marker-cluster marker-cluster-' + size,
+            iconSize: L.point(radius, radius),
+          })
+        }
       })
 
       clusterGroupRef.current = markerClusterGroup
