@@ -59,7 +59,6 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen flex" dir={locale === "ar" ? "rtl" : "ltr"}>
-      {/* Left Panel - Branding */}
       <div className="hidden lg:flex lg:w-1/2 bg-primary relative overflow-hidden">
         <div className="absolute inset-0 bg-[linear-gradient(135deg,transparent_25%,rgba(255,255,255,0.05)_25%,rgba(255,255,255,0.05)_50%,transparent_50%,transparent_75%,rgba(255,255,255,0.05)_75%)] bg-[length:60px_60px]"></div>
         <div className="relative z-10 flex flex-col justify-center p-12 text-primary-foreground">
@@ -115,10 +114,8 @@ export default function RegisterPage() {
         </div>
       </div>
 
-      {/* Right Panel - Register Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-6 md:p-10 bg-background">
         <div className="w-full max-w-md">
-          {/* Mobile Logo */}
           <div className="flex lg:hidden items-center justify-center gap-2 mb-8">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary">
               <MapPin className="h-6 w-6 text-primary-foreground" />
