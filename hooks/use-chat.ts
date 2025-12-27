@@ -7,7 +7,7 @@ export function useChat(token?: string) {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [isConnected, setIsConnected] = useState(false)
   const wsRef = useRef<WebSocket | null>(null)
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout>()
+  const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>()
   const reconnectAttemptsRef = useRef(0)
 
   const connect = useCallback(() => {
