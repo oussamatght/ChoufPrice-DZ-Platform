@@ -6,9 +6,10 @@ import { MapPin, Package, TrendingUp, AlertTriangle } from "lucide-react"
 
 interface StatsOverviewProps {
   reports: PriceReport[]
+  t: (key: string) => string
 }
 
-export function StatsOverview({ reports }: StatsOverviewProps) {
+export function StatsOverview({ reports, t }: StatsOverviewProps) {
   const stats = {
     totalReports: reports.length,
     cities: new Set(reports.map((r) => r.city)).size,
@@ -18,28 +19,28 @@ export function StatsOverview({ reports }: StatsOverviewProps) {
 
   const statItems = [
     {
-      label: "Prix Signalés",
+      label: t("stats.totalReports"),
       value: stats.totalReports.toLocaleString("fr-DZ"),
       icon: Package,
       bgColor: "bg-primary/10",
       iconColor: "text-primary",
     },
     {
-      label: "Villes Couvertes",
+      label: t("stats.cities"),
       value: stats.cities,
       icon: MapPin,
       bgColor: "bg-info/10",
       iconColor: "text-info",
     },
     {
-      label: "Produits Suivis",
+      label: t("stats.products"),
       value: stats.products,
       icon: TrendingUp,
       bgColor: "bg-success/10",
       iconColor: "text-success",
     },
     {
-      label: "Prix Anormaux",
+      label: t("stats.abnormalPrices"),
       value: stats.abnormalPrices,
       icon: AlertTriangle,
       bgColor: "bg-destructive/10",

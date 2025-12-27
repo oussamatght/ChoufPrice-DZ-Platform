@@ -4,6 +4,8 @@ import { useState, useCallback, useEffect, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import dynamic from "next/dynamic"
 import { useAuth } from "@/context/auth-context"
+import { useChat } from "@/hooks/use-chat"
+import { useLanguage } from "@/context/language-context"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { PriceList } from "@/components/price-list"
@@ -13,7 +15,7 @@ import { CommunityChat } from "@/components/community-chat"
 import { PriceAlerts } from "@/components/price-alerts"
 import { StatsOverview } from "@/components/stats-overview"
 import { priceReports as initialReports } from "@/data/products"
-import type { PriceReport, ChatMessage } from "@/types"
+import type { PriceReport } from "@/types"
 import { Skeleton } from "@/components/ui/skeleton"
 
 // Dynamic import for PriceMap to avoid SSR issues with Leaflet
@@ -26,37 +28,14 @@ const PriceMap = dynamic(() => import("@/components/price-map").then((mod) => ({
   ),
 })
 
-const initialMessages: ChatMessage[] = [
-  {
-    id: "msg-1",
-    userId: "user-1",
-    userName: "Ahmed B.",
-    message: "Bonjour! Les prix des légumes ont augmenté à Alger cette semaine.",
-    timestamp: new Date(Date.now() - 3600000 * 2),
-  },
-  {
-    id: "msg-2",
-    userId: "user-2",
-    userName: "Fatima Z.",
-    message: "Oui, j'ai remarqué aussi. La tomate est à 150 DA/kg chez moi.",
-    timestamp: new Date(Date.now() - 3600000),
-  },
-  {
-    id: "msg-3",
-    userId: "user-3",
-    userName: "Karim L.",
-    message: "À Oran c'est moins cher, environ 100 DA.",
-    timestamp: new Date(Date.now() - 1800000),
-  },
-]
-
 export default function DashboardPage() {
   const router = useRouter()
-  const { isAuthenticated, isLoading: authLoading, user } = useAuth()
+  const { isAuthenticated, isLoading: authLoading, user, token } = useAuth()
+  const { t, locale } = useLanguage()
+  const { messages: chatMessages, send: handleSendMessage, deleteMessage: handleDeleteMessage, isConnected } = useChat(token || undefined)
   const [reports, setReports] = useState<PriceReport[]>(initialReports)
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [selectedReport, setSelectedReport] = useState<PriceReport | null>(null)
-  const [chatMessages, setChatMessages] = useState<ChatMessage[]>(initialMessages)
   const [isClient, setIsClient] = useState(false)
 
   useEffect(() => {
@@ -93,21 +72,6 @@ export default function DashboardPage() {
       }),
     )
   }, [])
-
-  const handleSendMessage = useCallback(
-    (message: string) => {
-      if (!user) return
-      const newMessage: ChatMessage = {
-        id: `msg-${Date.now()}`,
-        userId: user.id,
-        userName: user.name,
-        message,
-        timestamp: new Date(),
-      }
-      setChatMessages((prev) => [...prev, newMessage])
-    },
-    [user],
-  )
 
   const handleSelectReport = useCallback((report: PriceReport) => {
     setSelectedReport(report)
@@ -164,15 +128,15 @@ export default function DashboardPage() {
         <div className="space-y-4 md:space-y-6">
           {/* Header */}
           <div>
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground">Tableau de Bord</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">Surveillez les prix en temps réel</p>
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground">{t("dashboard.title")}</h1>
+            <p className="text-sm text-muted-foreground mt-0.5">{t("dashboard.subtitle")}</p>
           </div>
 
           {/* Stats Overview */}
-          <StatsOverview reports={reports} />
+          <StatsOverview reports={reports} t={t} />
 
           {/* Alerts - Collapsible on mobile */}
-          {alerts.length > 0 && <PriceAlerts alerts={alerts} onDismiss={handleDismissAlert} />}
+          {alerts.length > 0 && <PriceAlerts alerts={alerts} onDismiss={handleDismissAlert} t={t} />}
 
           {/* Category Filter */}
           <CategoryFilter
@@ -201,7 +165,7 @@ export default function DashboardPage() {
           {/* Add Price and Chat - Stack on mobile */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
             <AddPriceForm onAddPrice={handleAddPrice} />
-            <CommunityChat messages={chatMessages} onSendMessage={handleSendMessage} />
+            <CommunityChat messages={chatMessages} onSendMessage={handleSendMessage} onDeleteMessage={handleDeleteMessage} isConnected={isConnected} />
           </div>
         </div>
       </main>

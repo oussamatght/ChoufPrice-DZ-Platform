@@ -5,6 +5,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { useAuth } from "@/context/auth-context"
+import { useLanguage } from "@/context/language-context"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -16,6 +17,7 @@ import { toast } from "sonner"
 export default function LoginPage() {
   const router = useRouter()
   const { login, loginAnonymous, isLoading, isAuthenticated } = useAuth()
+  const { t, locale } = useLanguage()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
@@ -30,31 +32,33 @@ export default function LoginPage() {
     e.preventDefault()
 
     if (!email || !password) {
-      toast.error("Veuillez remplir tous les champs")
+      toast.error(t("auth.login.required"))
       return
     }
 
     try {
       await login(email, password)
-      toast.success("Connexion réussie!")
-      router.push("/")
+      toast.success(t("auth.login.success"))
+      // Small delay to ensure state updates before redirect
+      setTimeout(() => router.push("/"), 100)
     } catch {
-      toast.error("Erreur de connexion")
+      toast.error(t("auth.login.error"))
     }
   }
 
   const handleAnonymous = async () => {
     try {
       await loginAnonymous()
-      toast.success("Connecté en tant qu'anonyme")
-      router.push("/")
+      toast.success(t("toast.anonymous"))
+      // Small delay to ensure state updates before redirect
+      setTimeout(() => router.push("/"), 100)
     } catch {
-      toast.error("Erreur de connexion")
+      toast.error(t("auth.login.error"))
     }
   }
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex" dir={locale === "ar" ? "rtl" : "ltr"}>
       {/* Left Panel - Branding */}
       <div className="hidden lg:flex lg:w-1/2 bg-primary relative overflow-hidden">
         <div className="absolute inset-0 bg-[linear-gradient(135deg,transparent_25%,rgba(255,255,255,0.05)_25%,rgba(255,255,255,0.05)_50%,transparent_50%,transparent_75%,rgba(255,255,255,0.05)_75%)] bg-[length:60px_60px]"></div>
@@ -70,11 +74,11 @@ export default function LoginPage() {
           </div>
 
           <h2 className="text-4xl font-bold mb-6 leading-tight text-balance" translate="no" suppressHydrationWarning>
-            Suivez les prix en temps réel à travers l'Algérie
+            {t("hero.title")}
           </h2>
 
           <p className="text-lg text-primary-foreground/80 mb-10 leading-relaxed">
-            La plateforme communautaire pour surveiller et partager les prix des produits dans toutes les wilayas.
+            {t("hero.subtitle")}
           </p>
 
           <div className="space-y-5">
@@ -83,8 +87,8 @@ export default function LoginPage() {
                 <TrendingUp className="h-5 w-5" />
               </div>
               <div>
-                <h3 className="font-semibold">Prix en Direct</h3>
-                <p className="text-sm text-primary-foreground/70">Mises à jour en temps réel par la communauté</p>
+                <h3 className="font-semibold">{t("hero.feature1.title")}</h3>
+                <p className="text-sm text-primary-foreground/70">{t("hero.feature1.desc")}</p>
               </div>
             </div>
 
@@ -93,8 +97,8 @@ export default function LoginPage() {
                 <Users className="h-5 w-5" />
               </div>
               <div>
-                <h3 className="font-semibold">Communauté Active</h3>
-                <p className="text-sm text-primary-foreground/70">Des milliers de contributeurs à travers le pays</p>
+                <h3 className="font-semibold">{t("hero.feature2.title")}</h3>
+                <p className="text-sm text-primary-foreground/70">{t("hero.feature2.desc")}</p>
               </div>
             </div>
 
@@ -103,8 +107,8 @@ export default function LoginPage() {
                 <Bell className="h-5 w-5" />
               </div>
               <div>
-                <h3 className="font-semibold">Alertes Prix</h3>
-                <p className="text-sm text-primary-foreground/70">Soyez notifié des prix anormaux</p>
+                <h3 className="font-semibold">{t("hero.feature3.title")}</h3>
+                <p className="text-sm text-primary-foreground/70">{t("hero.feature3.desc")}</p>
               </div>
             </div>
           </div>
@@ -126,24 +130,24 @@ export default function LoginPage() {
 
           <Card className="border-0 shadow-none lg:border lg:shadow-sm">
             <CardHeader className="text-center pb-4">
-              <CardTitle className="text-2xl font-bold">Connexion</CardTitle>
-              <CardDescription className="text-muted-foreground">
-                Connectez-vous pour accéder à votre compte
-              </CardDescription>
+                <CardTitle className="text-2xl font-bold">{t("auth.login.title")}</CardTitle>
+                <CardDescription className="text-muted-foreground">
+                  {t("auth.login.subtitle")}
+                </CardDescription>
             </CardHeader>
 
             <CardContent className="space-y-5">
               <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="email" className="text-sm font-medium">
-                    Email
+                    {t("auth.login.email")}
                   </Label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                       id="email"
                       type="email"
-                      placeholder="votre@email.com"
+                      placeholder={t("form.placeholderEmail")}
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       className="pl-10 h-11"
@@ -153,14 +157,14 @@ export default function LoginPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="password" className="text-sm font-medium">
-                    Mot de passe
+                    {t("auth.login.password")}
                   </Label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                       id="password"
                       type={showPassword ? "text" : "password"}
-                      placeholder="••••••••"
+                      placeholder={t("form.password.placeholder")}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       className="pl-10 pr-10 h-11"
@@ -179,10 +183,10 @@ export default function LoginPage() {
                   {isLoading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Connexion...
+                      {t("auth.login.button") + "..."}
                     </>
                   ) : (
-                    "Se Connecter"
+                    t("auth.login.button")
                   )}
                 </Button>
               </form>
@@ -190,7 +194,7 @@ export default function LoginPage() {
               <div className="relative">
                 <Separator />
                 <span className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-card px-3 text-xs text-muted-foreground">
-                  ou
+                  {t("auth.login.or")}
                 </span>
               </div>
 
@@ -201,15 +205,15 @@ export default function LoginPage() {
                 disabled={isLoading}
               >
                 <UserCircle className="mr-2 h-4 w-4" />
-                Continuer en Anonyme
+                {t("auth.login.anonymous")}
               </Button>
             </CardContent>
 
             <CardFooter className="justify-center pt-2">
               <p className="text-sm text-muted-foreground">
-                Pas encore de compte?{" "}
+                {t("auth.register.subtitle")}{" "}
                 <Link href="/register" className="text-primary hover:underline font-medium">
-                  Créer un compte
+                  {t("nav.register")}
                 </Link>
               </p>
             </CardFooter>

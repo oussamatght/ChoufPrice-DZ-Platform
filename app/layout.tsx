@@ -5,6 +5,8 @@ import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 import { AuthProvider } from "@/context/auth-context"
 import { Toaster } from "@/components/ui/sonner"
+import { ThemeProvider } from "@/components/theme-provider"
+import { LanguageProvider } from "@/context/language-context"
 
 
 export const metadata: Metadata = {
@@ -32,10 +34,14 @@ export default function RootLayout({
   return (
     <html lang="fr" translate="no" suppressHydrationWarning>
       <body className={`font-sans antialiased`} suppressHydrationWarning>
-        <AuthProvider>
-          {children}
-          <Toaster />
-        </AuthProvider>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <LanguageProvider>
+            <AuthProvider>
+              {children}
+              <Toaster />
+            </AuthProvider>
+          </LanguageProvider>
+        </ThemeProvider>
         <Analytics />
       </body>
     </html>

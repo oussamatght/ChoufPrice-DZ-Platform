@@ -12,10 +12,14 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { MapPin, User, LogOut, Menu, X, LayoutDashboard, Info } from "lucide-react"
 import { useState } from "react"
+import { LanguageSwitcher } from "@/components/language-switcher"
+import { ThemeToggle } from "@/components/theme-toggle"
+import { useLanguage } from "@/context/language-context"
 
 export function Navbar() {
   const { user, logout, isAuthenticated } = useAuth()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const { t } = useLanguage()
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
@@ -37,18 +41,20 @@ export function Navbar() {
             className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition-colors"
           >
             <LayoutDashboard className="h-4 w-4" />
-            Tableau de Bord
+            {t("nav.dashboard")}
           </Link>
           <Link
             href="/about"
             className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition-colors"
           >
-            <Info className="h-4 w-4" />À Propos
+            <Info className="h-4 w-4" />{t("nav.about")}
           </Link>
         </nav>
 
-        {/* Desktop Auth */}
+        {/* Desktop Controls + Auth */}
         <div className="hidden md:flex items-center gap-3">
+          <LanguageSwitcher />
+          <ThemeToggle />
           {isAuthenticated ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -63,23 +69,23 @@ export function Navbar() {
                 <div className="px-2 py-1.5">
                   <p className="text-sm font-medium">{user?.name}</p>
                   <p className="text-xs text-muted-foreground">
-                    {user?.isAnonymous ? "Utilisateur Anonyme" : user?.email}
+                    {user?.isAnonymous ? t("nav.anonymous") : user?.email}
                   </p>
                 </div>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={logout} className="text-destructive focus:text-destructive">
                   <LogOut className="mr-2 h-4 w-4" />
-                  Se Déconnecter
+                  {t("nav.logout")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
             <div className="flex gap-2">
               <Button variant="ghost" asChild className="h-9">
-                <Link href="/login">Connexion</Link>
+                <Link href="/login">{t("nav.login")}</Link>
               </Button>
               <Button asChild className="h-9">
-                <Link href="/register">Inscription</Link>
+                <Link href="/register">{t("nav.register")}</Link>
               </Button>
             </div>
           )}
@@ -106,15 +112,20 @@ export function Navbar() {
               className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-md hover:bg-muted transition-colors"
             >
               <LayoutDashboard className="h-4 w-4 text-muted-foreground" />
-              Tableau de Bord
+              {t("nav.dashboard")}
             </Link>
             <Link
               href="/about"
               onClick={() => setIsMobileMenuOpen(false)}
               className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-md hover:bg-muted transition-colors"
             >
-              <Info className="h-4 w-4 text-muted-foreground" />À Propos
+              <Info className="h-4 w-4 text-muted-foreground" />{t("nav.about")}
             </Link>
+
+            <div className="flex items-center gap-3 px-3 py-2">
+              <LanguageSwitcher />
+              <ThemeToggle />
+            </div>
 
             <div className="border-t border-border pt-4 mt-4">
               {isAuthenticated ? (
@@ -125,7 +136,7 @@ export function Navbar() {
                     </div>
                     <div>
                       <p className="text-sm font-medium">{user?.name}</p>
-                      <p className="text-xs text-muted-foreground">{user?.isAnonymous ? "Anonyme" : user?.email}</p>
+                      <p className="text-xs text-muted-foreground">{user?.isAnonymous ? t("nav.anonymous") : user?.email}</p>
                     </div>
                   </div>
                   <Button
@@ -137,16 +148,16 @@ export function Navbar() {
                     }}
                   >
                     <LogOut className="mr-2 h-4 w-4" />
-                    Se Déconnecter
+                    {t("nav.logout")}
                   </Button>
                 </div>
               ) : (
                 <div className="flex flex-col gap-2">
                   <Button variant="outline" asChild onClick={() => setIsMobileMenuOpen(false)}>
-                    <Link href="/login">Connexion</Link>
+                    <Link href="/login">{t("nav.login")}</Link>
                   </Button>
                   <Button asChild onClick={() => setIsMobileMenuOpen(false)}>
-                    <Link href="/register">Inscription</Link>
+                    <Link href="/register">{t("nav.register")}</Link>
                   </Button>
                 </div>
               )}

@@ -13,9 +13,10 @@ import { fr } from "date-fns/locale"
 interface PriceAlertsProps {
   alerts: PriceReport[]
   onDismiss: (id: string) => void
+  t: (key: string) => string
 }
 
-export function PriceAlerts({ alerts, onDismiss }: PriceAlertsProps) {
+export function PriceAlerts({ alerts, onDismiss, t }: PriceAlertsProps) {
   const [dismissed, setDismissed] = useState<Set<string>>(new Set())
 
   const visibleAlerts = alerts.filter((a) => !dismissed.has(a.id))
@@ -36,7 +37,7 @@ export function PriceAlerts({ alerts, onDismiss }: PriceAlertsProps) {
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-destructive/10 shrink-0">
             <AlertTriangle className="h-4 w-4" />
           </div>
-          <span>Alertes Prix</span>
+          <span>{t("alerts.title")}</span>
           <Badge variant="destructive" className="ml-auto shrink-0">
             {visibleAlerts.length}
           </Badge>

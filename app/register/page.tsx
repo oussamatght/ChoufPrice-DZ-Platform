@@ -5,6 +5,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { useAuth } from "@/context/auth-context"
+import { useLanguage } from "@/context/language-context"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -15,6 +16,7 @@ import { toast } from "sonner"
 export default function RegisterPage() {
   const router = useRouter()
   const { register, isLoading, isAuthenticated } = useAuth()
+  const { t, locale } = useLanguage()
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -32,31 +34,31 @@ export default function RegisterPage() {
     e.preventDefault()
 
     if (!name || !email || !password || !confirmPassword) {
-      toast.error("Veuillez remplir tous les champs")
+      toast.error(t("auth.register.required"))
       return
     }
 
     if (password !== confirmPassword) {
-      toast.error("Les mots de passe ne correspondent pas")
+      toast.error(t("auth.register.mismatch"))
       return
     }
 
     if (password.length < 6) {
-      toast.error("Le mot de passe doit contenir au moins 6 caractères")
+      toast.error(t("auth.register.short"))
       return
     }
 
     try {
       await register(email, password, name)
-      toast.success("Compte créé avec succès!")
-      router.push("/")
+      toast.success(t("auth.register.success"))
+      setTimeout(() => router.push("/"), 100)
     } catch {
-      toast.error("Erreur lors de la création du compte")
+      toast.error(t("auth.register.error"))
     }
   }
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex" dir={locale === "ar" ? "rtl" : "ltr"}>
       {/* Left Panel - Branding */}
       <div className="hidden lg:flex lg:w-1/2 bg-primary relative overflow-hidden">
         <div className="absolute inset-0 bg-[linear-gradient(135deg,transparent_25%,rgba(255,255,255,0.05)_25%,rgba(255,255,255,0.05)_50%,transparent_50%,transparent_75%,rgba(255,255,255,0.05)_75%)] bg-[length:60px_60px]"></div>
@@ -71,12 +73,12 @@ export default function RegisterPage() {
             </div>
           </div>
 
-          <h2 className="text-4xl font-bold mb-6 leading-tight text-balance">
-            Rejoignez la communauté des prix en Algérie
+          <h2 className="text-4xl font-bold mb-6 leading-tight text-balance" translate="no" suppressHydrationWarning>
+            {t("hero.title")}
           </h2>
 
           <p className="text-lg text-primary-foreground/80 mb-10 leading-relaxed">
-            Créez votre compte gratuitement et commencez à contribuer à la transparence des prix.
+            {t("hero.subtitle")}
           </p>
 
           <div className="space-y-5">
@@ -85,8 +87,8 @@ export default function RegisterPage() {
                 <CheckCircle2 className="h-5 w-5" />
               </div>
               <div>
-                <h3 className="font-semibold">100% Gratuit</h3>
-                <p className="text-sm text-primary-foreground/70">Aucun frais, aucun abonnement requis</p>
+                <h3 className="font-semibold">{t("hero.feature1.title")}</h3>
+                <p className="text-sm text-primary-foreground/70">{t("hero.feature1.desc")}</p>
               </div>
             </div>
 
@@ -95,8 +97,8 @@ export default function RegisterPage() {
                 <Shield className="h-5 w-5" />
               </div>
               <div>
-                <h3 className="font-semibold">Données Sécurisées</h3>
-                <p className="text-sm text-primary-foreground/70">Vos informations sont protégées</p>
+                <h3 className="font-semibold">{t("hero.feature2.title")}</h3>
+                <p className="text-sm text-primary-foreground/70">{t("hero.feature2.desc")}</p>
               </div>
             </div>
 
@@ -105,8 +107,8 @@ export default function RegisterPage() {
                 <Zap className="h-5 w-5" />
               </div>
               <div>
-                <h3 className="font-semibold">Accès Instantané</h3>
-                <p className="text-sm text-primary-foreground/70">Commencez immédiatement après inscription</p>
+                <h3 className="font-semibold">{t("hero.feature3.title")}</h3>
+                <p className="text-sm text-primary-foreground/70">{t("hero.feature3.desc")}</p>
               </div>
             </div>
           </div>
@@ -128,22 +130,22 @@ export default function RegisterPage() {
 
           <Card className="border-0 shadow-none lg:border lg:shadow-sm">
             <CardHeader className="text-center pb-4">
-              <CardTitle className="text-2xl font-bold">Créer un Compte</CardTitle>
-              <CardDescription className="text-muted-foreground">Rejoignez la communauté ChoufPrice DZ</CardDescription>
+              <CardTitle className="text-2xl font-bold">{t("auth.register.title")}</CardTitle>
+              <CardDescription className="text-muted-foreground">{t("auth.register.subtitle")}</CardDescription>
             </CardHeader>
 
             <CardContent className="space-y-5">
               <form onSubmit={handleRegister} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="name" className="text-sm font-medium">
-                    Nom complet
+                    {t("form.name")}
                   </Label>
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                       id="name"
                       type="text"
-                      placeholder="Votre nom"
+                      placeholder={t("form.name")}
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       className="pl-10 h-11"
@@ -153,14 +155,14 @@ export default function RegisterPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="email" className="text-sm font-medium">
-                    Email
+                    {t("form.email")}
                   </Label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                       id="email"
                       type="email"
-                      placeholder="votre@email.com"
+                      placeholder={t("form.placeholderEmail")}
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       className="pl-10 h-11"
@@ -170,14 +172,14 @@ export default function RegisterPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="password" className="text-sm font-medium">
-                    Mot de passe
+                    {t("form.password")}
                   </Label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                       id="password"
                       type={showPassword ? "text" : "password"}
-                      placeholder="••••••••"
+                      placeholder={t("form.password.placeholder")}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       className="pl-10 pr-10 h-11"
@@ -194,14 +196,14 @@ export default function RegisterPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="confirmPassword" className="text-sm font-medium">
-                    Confirmer le mot de passe
+                    {t("auth.register.confirm")}
                   </Label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                       id="confirmPassword"
                       type={showConfirmPassword ? "text" : "password"}
-                      placeholder="••••••••"
+                      placeholder={t("form.password.placeholder")}
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       className="pl-10 pr-10 h-11"
@@ -220,10 +222,10 @@ export default function RegisterPage() {
                   {isLoading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Création...
+                      {t("auth.register.button") + "..."}
                     </>
                   ) : (
-                    "Créer mon Compte"
+                    t("auth.register.button")
                   )}
                 </Button>
               </form>
@@ -231,9 +233,9 @@ export default function RegisterPage() {
 
             <CardFooter className="justify-center pt-2">
               <p className="text-sm text-muted-foreground">
-                Déjà un compte?{" "}
+                {t("auth.login.subtitle")}{" "}
                 <Link href="/login" className="text-primary hover:underline font-medium">
-                  Se connecter
+                  {t("nav.login")}
                 </Link>
               </p>
             </CardFooter>
@@ -241,5 +243,7 @@ export default function RegisterPage() {
         </div>
       </div>
     </div>
+  )
+}
   )
 }

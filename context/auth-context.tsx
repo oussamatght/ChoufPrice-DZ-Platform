@@ -8,6 +8,7 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000"
 
 interface AuthContextType {
   user: User | null
+  token: string | null
   isLoading: boolean
   login: (email: string, password: string) => Promise<void>
   register: (email: string, password: string, name: string) => Promise<void>
@@ -145,6 +146,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const value = useMemo(
     () => ({
       user,
+      token,
       isLoading,
       login,
       register,
@@ -152,7 +154,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       logout,
       isAuthenticated: !!user,
     }),
-    [user, isLoading, login, register, loginAnonymous, logout],
+    [user, token, isLoading, login, register, loginAnonymous, logout],
   )
 
   return (
