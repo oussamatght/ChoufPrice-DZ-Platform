@@ -297,22 +297,6 @@ sequenceDiagram
 
 ---
 
-## ✅ Assessor Guide
-
-- Documentation (20%):
-   - Clear About, Features, Tech Stack, Architecture diagrams (flowchart + sequence)
-   - Setup guides and production build instructions
-   - Backend docs in `/backend/README.md` and `API_DOCS.md`
-- Implementation (40%):
-   - Live map with 54K+ reports, clustering, spiderfy
-   - Auth (JWT + anonymous), chat (WS with delete), alerts, voting, search
-   - Performance: dynamic imports, batching, caching hooks
-- Presentation/Video (30%):
-   - Linked demo video and slides; scripted walkthrough above
-   - Live demo URL; responsive UI and RTL proof during demo
-- Creativity (10%):
-   - RTL/AR language support; optimistic chat UX with dedupe
-   - Price anomaly detection; polished clustering visuals
 
 If evaluating locally:
 
