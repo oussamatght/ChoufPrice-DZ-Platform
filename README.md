@@ -222,11 +222,45 @@ ChoufPrice-DZ-Platform/
 
 ```mermaid
 flowchart LR
-   User["User"] -->|WebSocket / chat| WS[(Chat Gateway)]
-   User -->|REST| API[(Next.js API / Backend)]
-   WS --> DB[(Database)]
-   API --> DB
-   WS -->|broadcast| Clients["Other Clients"]
+   %% Client / Edge
+   subgraph Client[Client]
+      U[User]
+   end
+
+   subgraph Edge[Vercel Edge]
+      CDN[Static Assets]
+   end
+
+   subgraph App[Next.js App]
+      API[REST API Routes]
+      WS[WebSocket Gateway]
+   end
+
+   subgraph Services[Services]
+      Alerts[Price Alerts]
+      Reports[Price Reports]
+      Chat[Chat Stream]
+   end
+
+   subgraph Data[Data Layer]
+      Cache[(Redis/Cache)]
+      DB[(Mongo/Postgres)]
+   end
+
+   U -->|HTTPS| CDN
+   CDN --> API
+   CDN --> WS
+
+   API --> Reports
+   API --> Alerts
+   WS  --> Chat
+
+   Reports --> DB
+   Alerts  --> DB
+   Chat    --> DB
+   Reports --> Cache
+
+   WS -->|broadcast| U
 ```
 
 ---
