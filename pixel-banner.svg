@@ -1,0 +1,62 @@
+<svg width="1200" height="320" viewBox="0 0 1200 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Oussama Taright - Pixel Banner</title>
+  <desc id="desc">Pixel-styled animated banner with scanline reveal</desc>
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0c0f1f" />
+      <stop offset="50%" stop-color="#15244a" />
+      <stop offset="100%" stop-color="#0c0f1f" />
+    </linearGradient>
+    <pattern id="pixels" x="0" y="0" width="12" height="12" patternUnits="userSpaceOnUse">
+      <rect x="0" y="0" width="12" height="12" fill="none" />
+      <rect x="0" y="0" width="2" height="12" fill="#1c2b55" opacity="0.55" />
+      <rect x="0" y="0" width="12" height="2" fill="#1c2b55" opacity="0.55" />
+    </pattern>
+    <filter id="soft-glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+    <clipPath id="text-clip">
+      <text x="50%" y="55%" text-anchor="middle" font-family="'Press Start 2P','Courier New', monospace" font-size="54" letter-spacing="4" dy="8">OUSSAMA TARIGHT</text>
+      <text x="50%" y="72%" text-anchor="middle" font-family="'Press Start 2P','Courier New', monospace" font-size="22" letter-spacing="2">FULL-STACK DEVELOPER</text>
+    </clipPath>
+  </defs>
+
+  <rect width="1200" height="320" fill="url(#bg)" />
+  <rect width="1200" height="320" fill="url(#pixels)" opacity="0.45" />
+
+  <g filter="url(#soft-glow)" fill="#74e0ff" opacity="0.9">
+    <text x="50%" y="55%" text-anchor="middle" font-family="'Press Start 2P','Courier New', monospace" font-size="54" letter-spacing="4" dy="8">OUSSAMA TARIGHT</text>
+    <text x="50%" y="72%" text-anchor="middle" font-family="'Press Start 2P','Courier New', monospace" font-size="22" letter-spacing="2">FULL-STACK DEVELOPER</text>
+  </g>
+
+  <g clip-path="url(#text-clip)">
+    <rect x="-220" y="0" width="200" height="320" fill="#74e0ff">
+      <animate attributeName="x" from="-220" to="1400" dur="3.8s" repeatCount="indefinite" />
+    </rect>
+    <rect x="0" y="0" width="1200" height="320" fill="transparent">
+      <animate attributeName="fill" values="#0c0f1f;#74e0ff;#0c0f1f" dur="2.2s" repeatCount="indefinite" />
+    </rect>
+  </g>
+
+  <g fill="#9ad5ff" opacity="0.2">
+    <rect x="80" y="40" width="6" height="6">
+      <animate attributeName="opacity" values="0.1;0.6;0.1" dur="3s" repeatCount="indefinite" />
+    </rect>
+    <rect x="260" y="220" width="6" height="6">
+      <animate attributeName="opacity" values="0.05;0.5;0.05" dur="2.7s" repeatCount="indefinite" />
+    </rect>
+    <rect x="520" y="120" width="6" height="6">
+      <animate attributeName="opacity" values="0.15;0.55;0.15" dur="2.9s" repeatCount="indefinite" />
+    </rect>
+    <rect x="760" y="180" width="6" height="6">
+      <animate attributeName="opacity" values="0.1;0.5;0.1" dur="3.4s" repeatCount="indefinite" />
+    </rect>
+    <rect x="980" y="70" width="6" height="6">
+      <animate attributeName="opacity" values="0.12;0.6;0.12" dur="2.5s" repeatCount="indefinite" />
+    </rect>
+  </g>
+</svg>

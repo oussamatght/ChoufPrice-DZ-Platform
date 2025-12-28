@@ -7,6 +7,7 @@ import { AuthProvider } from "@/context/auth-context"
 import { Toaster } from "@/components/ui/sonner"
 import { ThemeProvider } from "@/components/theme-provider"
 import { LanguageProvider } from "@/context/language-context"
+import { ReportsProviderWrapper } from "@/components/reports-provider-wrapper"
 
 
 export const metadata: Metadata = {
@@ -37,8 +38,10 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <LanguageProvider>
             <AuthProvider>
-              {children}
-              <Toaster />
+              <ReportsProviderWrapper>
+                {children}
+                <Toaster />
+              </ReportsProviderWrapper>
             </AuthProvider>
           </LanguageProvider>
         </ThemeProvider>

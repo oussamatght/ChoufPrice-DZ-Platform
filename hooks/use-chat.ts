@@ -2,8 +2,10 @@
 
 import { useEffect, useRef, useState, useCallback } from "react"
 import type { ChatMessage } from "@/types"
+import { useAuth } from "@/context/auth-context"
 
 export function useChat(token?: string) {
+  const { user } = useAuth()
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [isConnected, setIsConnected] = useState(false)
   const wsRef = useRef<WebSocket | null>(null)
@@ -40,19 +42,55 @@ export function useChat(token?: string) {
             // Load full history on initial connect
             console.log("[useChat] Setting history:", payload.messages?.length || 0, "messages")
             setMessages(payload.messages || [])
-          } else if (payload.type === "message" && payload.message) {
-            // Add new incoming message
-            console.log("[useChat] New message:", payload.message)
+            return
+          }
+
+          if (payload.type === "message") {
+            // Support both nested and flat message payloads
+            const msg = payload.message ?? {
+              id: payload.id,
+              userId: payload.userId,
+              userName: payload.userName,
+              message: payload.message ?? payload.text,
+              timestamp: payload.timestamp,
+            }
+
+            if (!msg || !msg.id) {
+              console.warn("[useChat] Ignoring malformed message payload")
+              return
+            }
+
+            console.log("[useChat] New message:", msg)
             setMessages((prev) => {
-              // Check if message already exists to avoid duplicates
-              const exists = prev.some((m) => m.id === payload.message.id)
+              // Replace matching optimistic message if present
+              const optimisticIndex = prev.findIndex(
+                (m) => m.id?.startsWith("optimistic-") && m.message === msg.message && m.userName === msg.userName
+              )
+              if (optimisticIndex >= 0) {
+                const next = [...prev]
+                next.splice(optimisticIndex, 1, msg)
+                return next
+              }
+
+              // Otherwise, avoid duplicates by id
+              const exists = prev.some((m) => m.id === msg.id)
               if (exists) {
                 console.log("[useChat] Message already exists, skipping duplicate")
                 return prev
               }
-              return [...prev, payload.message]
+              return [...prev, msg]
             })
-          } else if (payload.type === "error") {
+            return
+          }
+
+          if (payload.type === "delete" && payload.messageId) {
+            // Remove deleted message
+            console.log("[useChat] Deleting message:", payload.messageId)
+            setMessages((prev) => prev.filter((m) => m.id !== payload.messageId))
+            return
+          }
+
+          if (payload.type === "error") {
             console.warn("[useChat] Server error:", payload.message)
           }
         } catch (err) {
@@ -107,13 +145,25 @@ export function useChat(token?: string) {
     }
 
     try {
-      const payload = { type: "message", text }
+      // Backend expects the field name 'message', not 'text'
+      const payload = { type: "message", message: text }
       console.log("[useChat] Sending:", payload)
+      // Optimistically add the message for instant UI feedback
+      const tempId = `optimistic-${Date.now()}`
+      const optimistic: ChatMessage = {
+        id: tempId,
+        userId: user?.id || "guest",
+        userName: user?.name || "Guest",
+        message: text,
+        timestamp: new Date(),
+      }
+      setMessages((prev) => [...prev, optimistic])
+
       ws.send(JSON.stringify(payload))
     } catch (err) {
       console.error("[useChat] Failed to send message:", err)
     }
-  }, [])
+  }, [user])
 
   const deleteMessage = useCallback((messageId: string) => {
     const ws = wsRef.current

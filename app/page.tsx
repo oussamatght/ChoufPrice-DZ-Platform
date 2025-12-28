@@ -48,17 +48,106 @@ export default function DashboardPage() {
     }
   }, [authLoading, isAuthenticated, router])
 
-  const handleAddPrice = useCallback((newReport: Omit<PriceReport, "id" | "upvotes" | "downvotes">) => {
-    const report: PriceReport = {
+  const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000"
+
+  // Fetch dynamic reports from backend and merge with static ones (keep static)
+  useEffect(() => {
+    const fetchDynamicReports = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/reports`)
+        if (!res.ok) return
+        const data = await res.json()
+        const dynamicReports: PriceReport[] = (data.reports || []).map((r: any) => ({
+          id: r.id,
+          productName: r.productName,
+          price: r.price,
+          category: r.category,
+          location: r.location,
+          storeName: r.storeName,
+          isAbnormal: !!r.isAbnormal,
+          upvotes: r.upvotes ?? 0,
+          downvotes: r.downvotes ?? 0,
+        }))
+
+        setReports((prev) => {
+          const byId = new Map<string, PriceReport>()
+          prev.forEach((p) => byId.set(p.id, p))
+          dynamicReports.forEach((d) => byId.set(d.id, d))
+          return Array.from(byId.values())
+        })
+      } catch (err) {
+        console.warn("[Dashboard] Failed to fetch backend reports", err)
+      }
+    }
+    fetchDynamicReports()
+    const interval = setInterval(fetchDynamicReports, 60_000)
+    return () => clearInterval(interval)
+  }, [API_BASE])
+
+  const handleAddPrice = useCallback(async (newReport: Omit<PriceReport, "id" | "upvotes" | "downvotes">) => {
+    // Try backend create, fallback to local append on error
+    try {
+      const res = await fetch(`${API_BASE}/api/reports`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          productName: newReport.productName,
+          price: newReport.price,
+          category: newReport.category,
+          location: newReport.location,
+          storeName: (newReport as any).storeName || "",
+        }),
+      })
+      if (res.ok) {
+        const created = await res.json()
+        const report: PriceReport = {
+          id: created.id,
+          productName: created.productName,
+          price: created.price,
+          category: created.category,
+          location: created.location,
+          storeName: created.storeName,
+          isAbnormal: !!created.isAbnormal,
+          upvotes: created.upvotes ?? 0,
+          downvotes: created.downvotes ?? 0,
+        }
+        setReports((prev) => [report, ...prev])
+        return
+      }
+    } catch (err) {
+      console.warn("[Dashboard] Backend create failed, falling back", err)
+    }
+    const fallback: PriceReport = {
       ...newReport,
       id: `price-${Date.now()}`,
       upvotes: 0,
       downvotes: 0,
     }
-    setReports((prev) => [report, ...prev])
-  }, [])
+    setReports((prev) => [fallback, ...prev])
+  }, [API_BASE, token])
 
-  const handleVote = useCallback((reportId: string, type: "up" | "down") => {
+  const handleVote = useCallback(async (reportId: string, type: "up" | "down") => {
+    // Try backend vote, fallback to local counters
+    try {
+      const res = await fetch(`${API_BASE}/api/reports/${reportId}/vote`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ voteType: type }),
+      })
+      if (res.ok) {
+        const updated = await res.json()
+        setReports((prev) => prev.map((r) => (r.id === reportId ? { ...r, upvotes: updated.upvotes, downvotes: updated.downvotes } : r)))
+        return
+      }
+    } catch (err) {
+      console.warn("[Dashboard] Backend vote failed, falling back", err)
+    }
     setReports((prev) =>
       prev.map((report) => {
         if (report.id === reportId) {
@@ -71,7 +160,7 @@ export default function DashboardPage() {
         return report
       }),
     )
-  }, [])
+  }, [API_BASE, token])
 
   const handleSelectReport = useCallback((report: PriceReport) => {
     setSelectedReport(report)
