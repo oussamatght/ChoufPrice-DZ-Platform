@@ -27,6 +27,8 @@
 - [Contributing](#-contributing)
 - [License](#-license)
 - [Architecture](#-architecture)
+- [Presentation](#-presentation)
+- [Assessor Guide](#-assessor-guide)
 
 ---
 
@@ -264,6 +266,66 @@ flowchart LR
 ```
 
 ---
+
+## 🎥 Presentation
+
+- Demo video: https://youtu.be/your-demo-link
+- Slide deck: https://slides.com/your-deck
+- Live demo: https://chouf-price-dz-platform.vercel.app/
+
+Suggested demo flow:
+- 1) Login or anonymous join, language switch (FR/AR/EN, RTL UI)
+- 2) Explore map: clustering, spiderfy, filtering by category
+- 3) Submit a price report and see it appear on the map
+- 4) Vote on a report and show stats updating
+- 5) Open chat, send a message (optimistic), delete your message (broadcast)
+- 6) Trigger abnormal price alert and show alert banner
+
+Sequence (chat real-time):
+
+```mermaid
+sequenceDiagram
+   participant U as User
+   participant WS as WebSocket Gateway
+   participant DB as Database
+   participant C as Other Clients
+   U->>WS: send { type:"message", message }
+   WS->>DB: persist message
+   WS-->>U: echo { type:"message", ... }
+   WS-->>C: broadcast { type:"message", ... }
+```
+
+---
+
+## ✅ Assessor Guide
+
+- Documentation (20%):
+   - Clear About, Features, Tech Stack, Architecture diagrams (flowchart + sequence)
+   - Setup guides and production build instructions
+   - Backend docs in `/backend/README.md` and `API_DOCS.md`
+- Implementation (40%):
+   - Live map with 54K+ reports, clustering, spiderfy
+   - Auth (JWT + anonymous), chat (WS with delete), alerts, voting, search
+   - Performance: dynamic imports, batching, caching hooks
+- Presentation/Video (30%):
+   - Linked demo video and slides; scripted walkthrough above
+   - Live demo URL; responsive UI and RTL proof during demo
+- Creativity (10%):
+   - RTL/AR language support; optimistic chat UX with dedupe
+   - Price anomaly detection; polished clustering visuals
+
+If evaluating locally:
+
+```bash
+# Frontend
+npm install
+npm run dev
+
+# Backend (in /backend)
+npm install
+cp .env.example .env
+npm run dev
+```
 
 ## 🤝 Contributing
 
