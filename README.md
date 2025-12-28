@@ -26,6 +26,7 @@
 - [Performance](#-performance)
 - [Contributing](#-contributing)
 - [License](#-license)
+- [Architecture](#-architecture)
 
 ---
 
@@ -47,6 +48,7 @@
 ## ✨ Features
 
 ### Core Features
+
 - ✅ **Live Price Map** - Interactive Leaflet map with 54,900+ data points
 - ✅ **Category Filtering** - 10 product categories (food, beverages, electronics, etc.)
 - ✅ **Price Alerts** - Detect and display abnormal price fluctuations
@@ -57,6 +59,7 @@
 - ✅ **Statistics Dashboard** - Overview of price trends and totals
 
 ### Technical Features
+
 - ⚡ **Optimized Performance** - Batch rendering for 54K+ markers
 - 🎨 **Modern UI** - Built with Radix UI and shadcn/ui components
 - 🌙 **Dark Mode Ready** - Theme system with CSS variables
@@ -70,6 +73,7 @@
 ## 🛠️ Tech Stack
 
 ### Frontend
+
 - **Framework**: [Next.js 16](https://nextjs.org/) (App Router)
 - **Language**: [TypeScript 5](https://www.typescriptlang.org/)
 - **Styling**: [Tailwind CSS 4.1](https://tailwindcss.com/)
@@ -77,6 +81,7 @@
 - **Map Library**: [Leaflet 1.9.4](https://leafletjs.com/) + [leaflet.markercluster](https://github.com/Leaflet/Leaflet.markercluster)
 
 ### Additional Libraries
+
 - **Date Handling**: [date-fns 4.1](https://date-fns.org/)
 - **Form Management**: [react-hook-form](https://react-hook-form.com/) + [Zod](https://zod.dev/)
 - **Toast Notifications**: [Sonner](https://sonner.emilkowal.ski/)
@@ -84,6 +89,7 @@
 - **Icons**: [Lucide React](https://lucide.dev/)
 
 ### Data
+
 - **58 Algerian Cities** - With communes and coordinates
 - **300+ Products** - Across 10 categories
 - **54,900+ Price Reports** - Generated with realistic variations
@@ -101,12 +107,14 @@ Node.js 18+ and npm/pnpm
 ### Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/oussamatght/ChoufPrice-DZ-Platform.git
    cd ChoufPrice-DZ-Platform
    ```
 
 2. **Install dependencies**
+
    ```bash
    npm install
    # or
@@ -114,6 +122,7 @@ Node.js 18+ and npm/pnpm
    ```
 
 3. **Run development server**
+
    ```bash
    npm run dev
    ```
@@ -165,6 +174,7 @@ ChoufPrice-DZ-Platform/
 ## 🔑 Key Components
 
 ### PriceMap Component
+
 - **Dynamic Import**: SSR disabled for Leaflet compatibility
 - **Marker Clustering**: Groups nearby markers for performance
 - **Batch Rendering**: Processes 10,000 markers at a time
@@ -172,12 +182,14 @@ ChoufPrice-DZ-Platform/
 - **Spiderfy Effect**: Expands clusters into connected markers
 
 ### Authentication System
+
 - JWT token-based authentication
 - Anonymous login option
 - LocalStorage persistence
 - Protected routes with redirects
 
 ### Data Generation
+
 - Realistic price variations (70-130% of average)
 - Random timestamps (last 30 days)
 - Position randomization within cities
@@ -188,6 +200,7 @@ ChoufPrice-DZ-Platform/
 ## ⚡ Performance
 
 ### Optimizations Implemented
+
 - ✅ **Dynamic Imports** - Map loads client-side only
 - ✅ **useMemo Hooks** - Cached filtered data
 - ✅ **Batch Processing** - Markers added in chunks
@@ -197,10 +210,24 @@ ChoufPrice-DZ-Platform/
 - ✅ **Skeleton Loaders** - Better perceived performance
 
 ### Metrics
+
 - **Initial Load**: ~2-3 seconds
 - **Map Render**: 54,900 markers with clustering
 - **Zoom Performance**: Smooth transitions
 - **Mobile Optimized**: Touch-friendly controls
+
+---
+
+## 🧭 Architecture
+
+```mermaid
+flowchart LR
+   User["User"] -->|WebSocket / chat| WS[(Chat Gateway)]
+   User -->|REST| API[(Next.js API / Backend)]
+   WS --> DB[(Database)]
+   API --> DB
+   WS -->|broadcast| Clients["Other Clients"]
+```
 
 ---
 
@@ -243,7 +270,3 @@ This project is licensed under the MIT License.
 Made with ❤️ for Algeria 🇩🇿
 
 </div>
-
-
-#   G i t   c o n f i g   f i x e d   o n   1 2 / 2 7 / 2 0 2 5   1 7 : 3 8 : 2 8  
- 
